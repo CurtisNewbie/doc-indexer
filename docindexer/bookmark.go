@@ -12,6 +12,7 @@ import (
 	"github.com/curtisnewbie/miso/miso"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -133,16 +134,35 @@ func ProcessUploadedBookmarkFile(rail miso.Rail, req ParseBookmarkFileReq, path 
 	return SaveBookmarks(rail, miso.GetMySQL(), bookmarkFile, user)
 }
 
+type NewBookmark struct {
+	UserNo string
+	Icon   string
+	Name   string
+	Href   string
+	Md5    string
+}
+
 func SaveBookmarks(rail miso.Rail, tx *gorm.DB, bookmarkFile NetscapeBookmarkFile, user common.User) error {
+
+	bookmarks := make([]NewBookmark, 0, len(bookmarkFile.Bookmarks))
 	for i := range bookmarkFile.Bookmarks {
 		bm := bookmarkFile.Bookmarks[i]
 		md5 := BookmarkMd5(bm)
-		err := tx.Exec(`INSERT IGNORE INTO bookmark (user_no,icon,name,href,md5) VALUES (?,?,?,?,?)`,
-			user.UserNo, bm.Icon, bm.Name, bm.Href, md5).Error
-		if err != nil {
-			return fmt.Errorf("failed to insert bookmark, %v", err)
-		}
+		bookmarks = append(bookmarks, NewBookmark{
+			UserNo: user.UserNo,
+			Icon:   bm.Icon,
+			Name:   bm.Name,
+			Href:   bm.Href,
+			Md5:    md5,
+		})
 	}
+	// rail.Debugf("bookmarks: %+v", bookmarks)
+
+	err := tx.Table("bookmark").Clauses(clause.Insert{Modifier: "IGNORE"}).CreateInBatches(bookmarks, 100).Error
+	if err != nil {
+		return fmt.Errorf("failed to insert bookmark, %v", err)
+	}
+
 	return nil
 }
 
