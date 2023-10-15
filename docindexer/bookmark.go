@@ -171,3 +171,27 @@ func BookmarkMd5(bm Bookmark) string {
 	chksum := md5.Sum([]byte(s))
 	return hex.EncodeToString(chksum[:])
 }
+
+type ListedBookmark struct {
+	Id     int64
+	UserNo string
+	Name   string
+	Href   string
+	Icon   string
+}
+
+func ListBookmarks(rail miso.Rail, tx *gorm.DB, req ListBookmarksReq, userNo string) (any, error) {
+	var bookmarks []ListedBookmark
+	t := tx.Table("bookmark").
+		Select("id, user_no, name, href, icon").
+		Where("user_no = ?", userNo).
+		Order("id DESC").
+		Offset(req.Paging.GetOffset()).
+		Limit(req.Paging.GetLimit()).
+		Scan(&bookmarks)
+	return bookmarks, t.Error
+}
+
+func RemoveBookmark(rail miso.Rail, tx *gorm.DB, id int64, userNo string) error {
+	return tx.Exec("DELETE FROM bookmark WHERE user_no = ? AND id = ?", userNo, id).Error
+}
