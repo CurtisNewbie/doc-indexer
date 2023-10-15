@@ -102,33 +102,30 @@ func ParseNetscapeBookmark(rail miso.Rail, body io.Reader) (NetscapeBookmarkFile
 	}
 }
 
-func DownloadAsTmpFile(rail miso.Rail, req ParseBookmarkFileReq) (string, error) {
-	tkn, err := GetFstoreTmpToken(rail, req.TempFileId)
-	if err != nil {
-		return "", miso.NewErr(MsgUploadExpired, "GetFstoreTmpToken failed, tempFileId: %v, %v", req.TempFileId, err)
-	}
+func TransferTmpFile(rail miso.Rail, reader io.Reader) (string, error) {
+	path := TempFilePath(miso.RandAlpha(15))
 
-	path := TempFilePath(tkn)
-	if err := DownloadFstoreFile(rail, tkn, path); err != nil {
-		rail.Warnf("DownloadFstoreFile failed, tempFileId: %v, path: %v, %v", req.TempFileId, path, err)
-		return "", miso.NewErr(MsgUnknownErr, "downloaded fstore file to %v, tempFileId: %v", path, req.TempFileId)
+	f, err := os.Create(path)
+	if err != nil {
+		return "", miso.NewErr(MsgUploadFiled, "create file failed, path: %v, %v", path, err)
 	}
-	rail.Infof("Downloaded fstore file, tempFileId: %v, path: %v", req.TempFileId, path)
+	if _, err := io.Copy(f, reader); err != nil {
+		return "", miso.NewErr(MsgUploadFiled, "transfer file failed, path: %v, %v", path, err)
+	}
+	rail.Infof("Transferred file to path: %v", path)
 	return path, nil
 }
 
-func ProcessUploadedBookmarkFile(rail miso.Rail, req ParseBookmarkFileReq, path string, user common.User) error {
-	rail.Infof("User '%v' parse bookmark file, fileId: '%v'", user.Username, req.TempFileId)
+func ProcessUploadedBookmarkFile(rail miso.Rail, path string, user common.User) error {
+	rail.Infof("User '%v' parse bookmark file, tmpFile: %v", user.Username, path)
 	file, err := os.Open(path)
 	if err != nil {
-		return miso.NewErr(MsgUnknownErr, "open downloaded fstore file failed, path: %v, tempFileId: %v",
-			path, req.TempFileId)
+		return miso.NewErr(MsgUnknownErr, "open temp file failed, path: %v", path)
 	}
 
 	bookmarkFile, err := ParseNetscapeBookmark(rail, file)
 	if err != nil {
-		return miso.NewErr(MsgUnknownErr, "open downloaded fstore file failed, path: %v, tempFileId: %v",
-			path, req.TempFileId)
+		return miso.NewErr(MsgUnknownErr, "open temp file failed, path: %v", path)
 	}
 
 	return SaveBookmarks(rail, miso.GetMySQL(), bookmarkFile, user)
@@ -181,15 +178,25 @@ type ListedBookmark struct {
 }
 
 func ListBookmarks(rail miso.Rail, tx *gorm.DB, req ListBookmarksReq, userNo string) (any, error) {
-	var bookmarks []ListedBookmark
-	t := tx.Table("bookmark").
-		Select("id, user_no, name, href, icon").
-		Where("user_no = ?", userNo).
-		Order("id DESC").
-		Offset(req.Paging.GetOffset()).
-		Limit(req.Paging.GetLimit()).
-		Scan(&bookmarks)
-	return bookmarks, t.Error
+	return miso.QueryPageParam[ListedBookmark]{
+		ReqPage: req.Paging,
+		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Table("bookmark")
+		},
+		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("id, user_no, name, href, icon").
+				Order("id DESC").
+				Offset(req.Paging.GetOffset()).
+				Limit(req.Paging.GetLimit())
+		},
+		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
+			tx = tx.Where("user_no = ?", userNo)
+			if req.Name != nil && *req.Name != "" {
+				tx = tx.Where("name like ?", "%"+*req.Name+"%")
+			}
+			return tx
+		},
+	}.ExecPageQuery(rail, tx)
 }
 
 func RemoveBookmark(rail miso.Rail, tx *gorm.DB, id int64, userNo string) error {

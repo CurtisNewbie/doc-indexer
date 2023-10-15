@@ -25,5 +25,5 @@ func MakeTempDirs(rail miso.Rail) error {
 }
 
 func TempFilePath(tempTkn string) string {
-	return miso.GetPropStr(PropTempPath + "/" + tempTkn)
+	return miso.GetPropStr(PropTempPath) + "/" + tempTkn
 }

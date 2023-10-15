@@ -9,6 +9,6 @@ CREATE TABLE docindexer.bookmark (
   `md5` varchar(32) not null default '' comment 'md5',
   PRIMARY KEY (`id`),
   KEY `idx_user_no` (`user_no`),
-  KEY `idx_name_no` (name(128)),
+  KEY `idx_name` (name),
   UNIQUE `uk_md5` (md5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Bookmark';

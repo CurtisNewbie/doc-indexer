@@ -30,6 +30,7 @@ server:
   port: 8091
   gracefulShutdownTimeSec: 5
   perf.enabled: true
+  request-log.enabled: true
 
 consul:
   enabled: true

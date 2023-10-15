@@ -42,13 +42,12 @@ func TestProcessUploadedBookmarkFile(t *testing.T) {
 		t.FailNow()
 	}
 
-	req := ParseBookmarkFileReq{TempFileId: "abc"}
 	testFile := "bookmarks_2023_10_13.html"
 	user := common.User{
 		UserNo:   "UE202205142310076187414",
 		Username: "zhuangyongj",
 	}
-	if err := ProcessUploadedBookmarkFile(rail, req, testFile, user); err != nil {
+	if err := ProcessUploadedBookmarkFile(rail, testFile, user); err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
