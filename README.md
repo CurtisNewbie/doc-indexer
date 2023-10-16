@@ -1,10 +1,18 @@
 # doc-indexer
 
-Document Indexer.
+Document Indexer is a web service.
 
 Supports:
 
 - Managing Chrome bookmark file.
+
+Requirements:
+
+- MySQL
+- Consul
+- RabbitMQ
+- Consul
+- [GoAuth](https://github.com/curtisnewbie/goauth)
 
 
 ## Configuration
