@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/curtisnewbie/gocommon v1.1.3
-	github.com/curtisnewbie/miso v0.0.5-beta.2
+	github.com/curtisnewbie/miso v0.0.10
 	github.com/gin-gonic/gin v1.8.1
 	golang.org/x/net v0.7.0
 	gorm.io/gorm v1.23.8
@@ -27,7 +27,6 @@ require (
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/consul/api v1.15.3 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.0 // indirect
