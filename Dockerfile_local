@@ -13,4 +13,4 @@ COPY docindexer_build ./app_docindexer
 
 ENV TZ=Asia/Shanghai
 
-CMD ["./app_docindexer", "configFile=/usr/src/config/app-conf-prod.yml"]
+CMD ["./app_docindexer", "configFile=/usr/src/config/conf.yml"]
