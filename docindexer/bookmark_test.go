@@ -35,9 +35,9 @@ func TestNetscapeBookmark(t *testing.T) {
 func TestProcessUploadedBookmarkFile(t *testing.T) {
 	rail := miso.EmptyRail()
 	miso.SetLogLevel("debug")
-	miso.SetProp(miso.PropMySqldatabase, "docindexer")
+	miso.SetProp(miso.PropMySQLSchema, "docindexer")
 
-	if err := miso.InitMySQLFromProp(); err != nil {
+	if err := miso.InitMySQLFromProp(rail); err != nil {
 		t.Log(err)
 		t.FailNow()
 	}

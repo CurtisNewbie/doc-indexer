@@ -3,8 +3,8 @@ module github.com/curtisnewbie/doc-indexer
 go 1.20
 
 require (
-	github.com/curtisnewbie/gocommon v1.1.3
-	github.com/curtisnewbie/miso v0.0.12
+	github.com/curtisnewbie/gocommon v1.1.6
+	github.com/curtisnewbie/miso v0.0.16
 	github.com/gin-gonic/gin v1.8.1
 	golang.org/x/net v0.7.0
 	gorm.io/gorm v1.23.8

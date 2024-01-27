@@ -10,15 +10,10 @@ import (
 )
 
 const (
-	ResCodeBookmark = "manage-bookmarks"
-	ResNameBookmark = "Manage Bookmarks"
+	ResourceManageBookmark = "manage-bookmarks"
 
 	MsgUnknownErr  = "Unknown error, please try again"
 	MsgUploadFiled = "Upload failed, please try again"
-)
-
-var (
-	ManageBookmarkRes = goauth.Protected(ResNameBookmark, ResCodeBookmark)
 )
 
 type ListBookmarksReq struct {
@@ -27,20 +22,22 @@ type ListBookmarksReq struct {
 }
 
 func RegisterRoutes(rail miso.Rail) error {
-	goauth.ReportPathsOnBootstrapped(rail)
-	goauth.ReportResourcesOnBootstrapped(rail, []goauth.AddResourceReq{
-		{Code: ResCodeBookmark, Name: ResNameBookmark},
+	goauth.ReportOnBoostrapped(rail, []goauth.AddResourceReq{
+		{Code: ResourceManageBookmark, Name: "Manage Bookmarks"},
 	})
 
 	miso.BaseRoute("/bookmark").Group(
 		miso.Put("/file/upload", UploadBookmarkFileEp).
-			Extra(ManageBookmarkRes),
+			Desc("Upload bookmark file").
+			Resource(ResourceManageBookmark),
 
 		miso.IPost[ListBookmarksReq]("/list", ListBookmarksEp).
-			Extra(ManageBookmarkRes),
+			Desc("List bookmarks").
+			Resource(ResourceManageBookmark),
 
 		miso.IPost[RemoveBookmarkReq]("/remove", RemoveBookmarkEp).
-			Extra(ManageBookmarkRes),
+			Desc("Remove bookmark").
+			Resource(ResourceManageBookmark),
 	)
 
 	return nil
