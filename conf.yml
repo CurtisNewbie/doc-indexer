@@ -29,14 +29,10 @@ server:
   host: localhost
   port: 8091
   gracefulShutdownTimeSec: 5
-  perf.enabled: true
-  request-log.enabled: true
 
 consul:
   enabled: true
   consulAddress: localhost:8500
-
-goauth.client.enabled: true
 
 docindexer:
   temp-path: "/tmp/docindexer"

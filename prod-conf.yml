@@ -37,5 +37,3 @@ consul:
   consulAddress: consul:8500
 
 logging.rolling.file: "/usr/src/logs/${app.name}.log"
-
-goauth.client.enabled: true
