@@ -12,7 +12,6 @@ Requirements:
 - Consul
 - RabbitMQ
 - Consul
-- [GoAuth](https://github.com/curtisnewbie/goauth)
 
 
 ## Configuration
