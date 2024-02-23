@@ -107,10 +107,10 @@ func TransferTmpFile(rail miso.Rail, reader io.Reader) (string, error) {
 
 	f, err := os.Create(path)
 	if err != nil {
-		return "", miso.NewErr(MsgUploadFiled, "create file failed, path: %v, %v", path, err)
+		return "", ErrUploadFiled.WithInternalMsg("create file failed, path: %v, %v", path, err)
 	}
 	if _, err := io.Copy(f, reader); err != nil {
-		return "", miso.NewErr(MsgUploadFiled, "transfer file failed, path: %v, %v", path, err)
+		return "", ErrUploadFiled.WithInternalMsg("transfer file failed, path: %v, %v", path, err)
 	}
 	rail.Infof("Transferred file to path: %v", path)
 	return path, nil
@@ -120,12 +120,12 @@ func ProcessUploadedBookmarkFile(rail miso.Rail, path string, user common.User) 
 	rail.Infof("User '%v' parse bookmark file, tmpFile: %v", user.Username, path)
 	file, err := os.Open(path)
 	if err != nil {
-		return miso.NewErr(MsgUnknownErr, "open temp file failed, path: %v", path)
+		return ErrUnknown.WithInternalMsg("open temp file failed, path: %v", path)
 	}
 
 	bookmarkFile, err := ParseNetscapeBookmark(rail, file)
 	if err != nil {
-		return miso.NewErr(MsgUnknownErr, "open temp file failed, path: %v", path)
+		return ErrUnknown.WithInternalMsg("open temp file failed, path: %v", path)
 	}
 
 	return SaveBookmarks(rail, miso.GetMySQL(), bookmarkFile, user)
@@ -178,25 +178,22 @@ type ListedBookmark struct {
 }
 
 func ListBookmarks(rail miso.Rail, tx *gorm.DB, req ListBookmarksReq, userNo string) (any, error) {
-	return miso.QueryPageParam[ListedBookmark]{
-		ReqPage: req.Paging,
-		GetBaseQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("bookmark")
-		},
-		AddSelectQuery: func(tx *gorm.DB) *gorm.DB {
-			return tx.Select("id, user_no, name, href, icon").
-				Order("id DESC").
-				Offset(req.Paging.GetOffset()).
-				Limit(req.Paging.GetLimit())
-		},
-		ApplyConditions: func(tx *gorm.DB) *gorm.DB {
-			tx = tx.Where("user_no = ?", userNo)
+	return miso.NewPageQuery[ListedBookmark]().
+		WithPage(req.Paging).
+		WithBaseQuery(func(tx *gorm.DB) *gorm.DB {
+			tx = tx.Table("bookmark").Where("user_no = ?", userNo)
 			if req.Name != nil && *req.Name != "" {
 				tx = tx.Where("name like ?", "%"+*req.Name+"%")
 			}
 			return tx
-		},
-	}.ExecPageQuery(rail, tx)
+		}).
+		WithSelectQuery(func(tx *gorm.DB) *gorm.DB {
+			return tx.Select("id, user_no, name, href, icon").
+				Order("id DESC").
+				Offset(req.Paging.GetOffset()).
+				Limit(req.Paging.GetLimit())
+		}).
+		Exec(rail, tx)
 }
 
 func RemoveBookmark(rail miso.Rail, tx *gorm.DB, id int64, userNo string) error {
