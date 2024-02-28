@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/curtisnewbie/gocommon/common"
+	"github.com/curtisnewbie/miso/middleware/user-vault/common"
 	"github.com/curtisnewbie/miso/miso"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
