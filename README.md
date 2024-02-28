@@ -11,7 +11,6 @@ Requirements:
 - MySQL
 - Consul
 - RabbitMQ
-- Consul
 
 
 ## Configuration
