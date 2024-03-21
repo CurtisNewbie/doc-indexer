@@ -3,7 +3,7 @@ module github.com/curtisnewbie/doc-indexer
 go 1.20
 
 require (
-	github.com/curtisnewbie/miso v0.0.28-beta.1
+	github.com/curtisnewbie/miso v0.0.28
 	golang.org/x/net v0.7.0
 	gorm.io/gorm v1.23.8
 )
